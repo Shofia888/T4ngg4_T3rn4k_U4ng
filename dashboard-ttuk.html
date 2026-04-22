@@ -1,0 +1,2008 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>TTUK Dashboard — Tangga Ternak Uang Kuantitatif</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Barlow+Condensed:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ══════════════════════════════════════════════════════════
+   ROOT  —  Terminal Finance Dark Theme
+══════════════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:      #020408;
+  --bg1:     #060d0f;
+  --bg2:     #091217;
+  --bg3:     #0c1920;
+  --border:  #0f2d36;
+  --border2: #174050;
+  --border3: #1e5566;
+  --g:       #00e5a0;   /* primary green */
+  --g2:      #00b87a;
+  --g3:      #00ff9d;
+  --gold:    #f0b429;
+  --amber:   #fb923c;
+  --red:     #f43f5e;
+  --blue:    #22d3ee;
+  --purple:  #a78bfa;
+  --text:    #cde8e0;
+  --muted:   #3a7060;
+  --muted2:  #1f4535;
+  --dim:     #122820;
+  --mono:    'Space Mono', monospace;
+  --cond:    'Barlow Condensed', sans-serif;
+  --glow:    rgba(0,229,160,.18);
+  --glow-sm: rgba(0,229,160,.08);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--mono);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Scanline overlay */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,229,160,.012) 2px,
+    rgba(0,229,160,.012) 4px
+  );
+  pointer-events: none; z-index: 9999;
+}
+
+/* Grid background */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,229,160,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,160,.03) 1px, transparent 1px),
+    radial-gradient(ellipse 900px 700px at 0 0, rgba(0,229,160,.05) 0%, transparent 55%),
+    radial-gradient(ellipse 600px 500px at 100% 100%, rgba(0,184,122,.04) 0%, transparent 55%);
+  background-size: 48px 48px, 48px 48px, 100% 100%, 100% 100%;
+  pointer-events: none; z-index: 0;
+}
+
+.page {
+  position: relative; z-index: 1;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 0 80px;
+}
+
+/* ── Top Bar ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 28px;
+  background: var(--bg1);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+  gap: 12px; flex-wrap: wrap;
+}
+.topbar-brand {
+  font-family: var(--cond);
+  font-size: 20px; font-weight: 800;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--g);
+  text-shadow: 0 0 20px rgba(0,229,160,.4);
+}
+.topbar-brand span { color: var(--text); }
+.topbar-meta {
+  display: flex; align-items: center; gap: 20px;
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+}
+.topbar-dot {
+  display: flex; align-items: center; gap: 6px;
+  color: var(--g);
+}
+.topbar-dot::before {
+  content: '';
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--g); animation: pulse-dot 2s infinite;
+  box-shadow: 0 0 8px var(--g);
+}
+@keyframes pulse-dot {
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:.5;transform:scale(.75)}
+}
+
+/* ── Content area ── */
+.content { padding: 24px 28px; }
+
+/* ── Section header ── */
+.sec-head {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 18px; margin-top: 28px;
+}
+.sec-head:first-child { margin-top: 0; }
+.sec-id {
+  font-family: var(--cond); font-size: 11px; font-weight: 700;
+  letter-spacing: .2em; text-transform: uppercase;
+  color: var(--g2);
+  background: rgba(0,229,160,.06);
+  border: 1px solid rgba(0,229,160,.15);
+  padding: 3px 10px; border-radius: 4px;
+}
+.sec-title {
+  font-family: var(--cond); font-size: 22px; font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase; color: var(--text);
+}
+.sec-line { flex: 1; height: 1px; background: var(--border); }
+
+/* ── Cards / Panels ── */
+.panel {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  position: relative; overflow: hidden;
+}
+.panel::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,229,160,.25), transparent);
+}
+.panel-head {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--cond); font-size: 11px; font-weight: 700;
+  letter-spacing: .15em; text-transform: uppercase; color: var(--muted);
+  display: flex; align-items: center; gap: 10px;
+}
+.panel-body { padding: 16px; }
+
+/* ── Main layout ── */
+.main-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+@media(max-width:900px){ .main-grid { grid-template-columns: 1fr; } }
+
+/* ── Form ── */
+.form-group { margin-bottom: 12px; }
+.form-group label {
+  display: block;
+  font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 5px;
+}
+.input-row { display: flex; align-items: center; position: relative; }
+.input-pfx, .input-sfx {
+  position: absolute;
+  font-size: 11px; font-weight: 700;
+  pointer-events: none; z-index: 1;
+}
+.input-pfx { left: 10px; color: var(--g2); }
+.input-sfx { right: 10px; color: var(--muted); }
+
+input[type="number"] {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 9px 32px 9px 34px;
+  font-family: var(--mono); font-size: 13px;
+  color: var(--text); outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  -moz-appearance: textfield;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+input[type="number"]::placeholder { color: var(--muted2); }
+input[type="number"]:focus {
+  border-color: var(--g);
+  box-shadow: 0 0 0 2px var(--glow-sm), inset 0 0 12px rgba(0,229,160,.04);
+}
+input.no-pfx { padding-left: 10px; }
+
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form-hint { font-size: 9px; color: var(--muted2); margin-top: 4px; letter-spacing: .04em; }
+
+/* Live display box (auto-calculated) */
+.auto-display {
+  width: 100%;
+  background: rgba(0,229,160,.04);
+  border: 1px solid rgba(0,229,160,.2);
+  border-radius: 4px;
+  padding: 9px 34px 9px 34px;
+  font-family: var(--mono); font-size: 13px;
+  color: var(--g3); letter-spacing: .02em;
+  position: relative;
+}
+.auto-badge {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  font-size: 8px; letter-spacing: .1em; text-transform: uppercase;
+  background: rgba(0,229,160,.1); color: var(--g2);
+  border: 1px solid rgba(0,229,160,.2); padding: 1px 5px; border-radius: 3px;
+}
+
+/* Quick stats */
+.qs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+.qs-item {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 4px;
+  padding: 8px 10px;
+}
+.qs-label { font-size: 8px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted2); }
+.qs-val { font-size: 12px; font-weight: 700; color: var(--g); margin-top: 3px; }
+
+/* ── Tangga Steps ── */
+.tangga-list { display: flex; flex-direction: column; gap: 8px; }
+
+.step {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 5px; position: relative; overflow: hidden;
+  transition: all .35s;
+}
+.step::before {
+  content: ''; position: absolute;
+  left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--border2);
+  transition: background .35s;
+}
+.step.active {
+  background: rgba(0,229,160,.04);
+  border-color: rgba(0,229,160,.35);
+  box-shadow: 0 0 16px rgba(0,229,160,.08);
+}
+.step.active::before { background: var(--g); box-shadow: 0 0 8px var(--g); }
+
+.step-num {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--cond); font-size: 13px; font-weight: 800;
+  background: var(--bg3); color: var(--muted); border: 1px solid var(--border2);
+  transition: all .35s;
+}
+.step.active .step-num {
+  background: var(--g2); color: var(--bg); border-color: var(--g3);
+  box-shadow: 0 0 12px rgba(0,229,160,.5);
+}
+
+.step-info { flex: 1; min-width: 0; }
+.step-name {
+  font-family: var(--cond); font-size: 14px; font-weight: 700;
+  letter-spacing: .03em; color: var(--muted);
+  transition: color .35s;
+}
+.step.active .step-name { color: var(--g3); }
+.step-sub { font-size: 9px; color: var(--muted2); margin-top: 2px; letter-spacing: .04em; }
+
+.step-badge {
+  flex-shrink: 0; font-size: 8px; letter-spacing: .1em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 3px;
+  background: var(--bg3); color: var(--muted); border: 1px solid var(--border2);
+  transition: all .35s;
+  font-family: var(--cond); font-weight: 700;
+}
+.step.active .step-badge {
+  background: rgba(0,229,160,.12); color: var(--g); border-color: rgba(0,229,160,.3);
+}
+
+/* Progress mini bar inside step */
+.step-prog { margin-top: 8px; }
+.step-prog-track {
+  height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;
+}
+.step-prog-fill {
+  height: 100%; background: linear-gradient(90deg, var(--g2), var(--g3));
+  border-radius: 2px; transition: width .8s cubic-bezier(.4,0,.2,1);
+  width: 0%;
+}
+.step-prog-fill.over { background: linear-gradient(90deg, var(--g), #fff); }
+.step-prog-label {
+  display: flex; justify-content: space-between;
+  font-size: 9px; color: var(--muted); margin-bottom: 4px;
+}
+
+/* Checkbox step */
+.step-check {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 8px; cursor: pointer;
+  font-size: 10px; color: var(--muted);
+  user-select: none;
+}
+.step-check input[type="checkbox"] { display: none; }
+.chk-box {
+  width: 16px; height: 16px; border-radius: 3px; flex-shrink: 0;
+  border: 1px solid var(--border2); background: var(--bg3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; transition: all .2s;
+}
+.chk-box.on { background: var(--g); border-color: var(--g3); color: var(--bg); }
+
+/* ── Rebalancer ── */
+.reb-grid {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+@media(max-width:640px){ .reb-grid { grid-template-columns: 1fr; } }
+
+.scenario-bar {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 14px; flex-wrap: wrap;
+}
+.scenario-label-txt {
+  font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+}
+select {
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 4px; padding: 8px 30px 8px 12px;
+  font-family: var(--mono); font-size: 12px; color: var(--text);
+  outline: none; cursor: pointer;
+  -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%233a7060' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+  transition: border-color .15s;
+}
+select:focus { border-color: var(--g); }
+option { background: #0c1920; }
+
+.regime-pill {
+  font-size: 9px; letter-spacing: .1em; text-transform: uppercase;
+  padding: 4px 12px; border-radius: 99px; font-weight: 700;
+  font-family: var(--cond);
+  transition: all .3s;
+}
+.regime-pill.ekspansi { background: rgba(0,229,160,.1); color: var(--g3); border: 1px solid rgba(0,229,160,.25); }
+.regime-pill.krisis   { background: rgba(240,180,41,.1); color: var(--gold); border: 1px solid rgba(240,180,41,.25); }
+.regime-pill.sideways { background: rgba(34,211,238,.1); color: var(--blue); border: 1px solid rgba(34,211,238,.25); }
+
+.chart-wrap { position: relative; width: 200px; height: 200px; margin: 0 auto; }
+.chart-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.chart-center-lbl { font-size: 8px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted2); }
+.chart-center-val { font-family: var(--cond); font-size: 15px; font-weight: 700; color: var(--g3); margin-top: 2px; }
+
+.chart-legend { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.cleg-item { display: flex; align-items: center; gap: 7px; font-size: 10px; color: var(--muted); }
+.cleg-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.cleg-pct { margin-left: auto; font-weight: 700; color: var(--text); }
+
+/* Asset allocation list */
+.asset-list { display: flex; flex-direction: column; gap: 10px; }
+
+.asset-row {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 5px; padding: 12px 14px;
+  display: grid; grid-template-columns: 28px 1fr auto;
+  gap: 10px; align-items: start;
+  position: relative; overflow: hidden;
+  transition: border-color .3s;
+}
+.asset-row::after {
+  content: ''; position: absolute;
+  left: 0; top: 0; bottom: 0; width: 2px;
+  transition: background .3s;
+}
+.asset-row[data-a="saham"]::after { background: var(--g); }
+.asset-row[data-a="sbn"]::after   { background: var(--blue); }
+.asset-row[data-a="oblig"]::after { background: var(--purple); }
+.asset-row[data-a="emas"]::after  { background: var(--gold); }
+.asset-row:hover { border-color: var(--border3); }
+
+.asset-icon { font-size: 18px; margin-top: 1px; }
+.asset-body {}
+.asset-name {
+  font-family: var(--cond); font-size: 15px; font-weight: 700; color: var(--text);
+  letter-spacing: .02em;
+}
+.asset-ticker {
+  font-size: 9px; letter-spacing: .1em; color: var(--muted2);
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 3px;
+  padding: 1px 5px; display: inline-block; margin: 2px 0 4px;
+}
+.asset-risk {
+  font-size: 8px; letter-spacing: .1em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 3px; display: inline-block; margin-bottom: 4px;
+  font-family: var(--cond); font-weight: 700;
+}
+.asset-risk.agg  { background: rgba(0,229,160,.08); color: var(--g3); }
+.asset-risk.cons { background: rgba(34,211,238,.08); color: var(--blue); }
+.asset-risk.mod  { background: rgba(167,139,250,.08); color: var(--purple); }
+.asset-risk.tact { background: rgba(240,180,41,.08); color: var(--gold); }
+.asset-rationale { font-size: 10px; color: var(--muted); line-height: 1.55; }
+
+.asset-right { text-align: right; }
+.asset-pct-big {
+  font-family: var(--cond); font-size: 28px; font-weight: 800;
+  line-height: 1; letter-spacing: -.02em;
+}
+.asset-row[data-a="saham"] .asset-pct-big { color: var(--g3); }
+.asset-row[data-a="sbn"]   .asset-pct-big { color: var(--blue); }
+.asset-row[data-a="oblig"] .asset-pct-big { color: var(--purple); }
+.asset-row[data-a="emas"]  .asset-pct-big { color: var(--gold); }
+.asset-pct-lbl { font-size: 8px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted2); }
+.asset-nominal {
+  margin-top: 6px; padding: 4px 8px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 3px; font-size: 11px; font-weight: 700; color: var(--text);
+  white-space: nowrap;
+}
+
+/* Monthly grid */
+.monthly-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+  margin-top: 14px;
+}
+@media(max-width:500px){ .monthly-grid { grid-template-columns: 1fr 1fr; } }
+.mi-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 5px;
+  padding: 10px 12px; text-align: center;
+}
+.mi-icon { font-size: 18px; margin-bottom: 3px; }
+.mi-label { font-size: 8px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted2); margin-bottom: 4px; }
+.mi-amount { font-family: var(--cond); font-size: 15px; font-weight: 700; color: var(--text); }
+
+/* ── FV Section ── */
+.fv-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  margin-bottom: 14px;
+}
+@media(max-width:560px){ .fv-grid { grid-template-columns: 1fr; } }
+
+.fv-card {
+  border-radius: 6px; padding: 18px; position: relative; overflow: hidden;
+}
+.fv-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.fv-card.nominal {
+  background: linear-gradient(135deg, rgba(0,229,160,.05) 0%, var(--bg2) 100%);
+  border: 1px solid rgba(0,229,160,.25);
+}
+.fv-card.nominal::before { background: linear-gradient(90deg, transparent, var(--g), transparent); }
+.fv-card.real {
+  background: linear-gradient(135deg, rgba(240,180,41,.05) 0%, var(--bg2) 100%);
+  border: 1px solid rgba(240,180,41,.2);
+}
+.fv-card.real::before { background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+
+.fv-eyebrow {
+  font-family: var(--cond); font-size: 10px; font-weight: 700;
+  letter-spacing: .15em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
+}
+.fv-eyebrow.nominal { color: var(--g2); }
+.fv-eyebrow.real    { color: #b45309; }
+.fv-eyebrow::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+.fv-value {
+  font-family: var(--cond);
+  font-size: clamp(20px, 3vw, 30px);
+  font-weight: 800; letter-spacing: -.02em; line-height: 1;
+}
+.fv-card.nominal .fv-value { color: var(--g3); text-shadow: 0 0 24px rgba(0,229,160,.25); }
+.fv-card.real    .fv-value { color: var(--gold); text-shadow: 0 0 24px rgba(240,180,41,.2); }
+.fv-sub { font-size: 10px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+
+.fv-params {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  margin-bottom: 14px;
+}
+@media(max-width:480px){ .fv-params { grid-template-columns: 1fr 1fr; } }
+.fv-param {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 4px;
+  padding: 8px 10px;
+}
+.fv-param-label { font-size: 8px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted2); margin-bottom: 3px; }
+.fv-param-val { font-family: var(--cond); font-size: 15px; font-weight: 700; color: var(--text); }
+
+.fv-disclaimer {
+  padding: 10px 14px; border-radius: 5px;
+  background: rgba(240,180,41,.04); border: 1px solid rgba(240,180,41,.12);
+  font-size: 10px; color: var(--muted); line-height: 1.6; letter-spacing: .02em;
+  display: flex; gap: 8px; align-items: flex-start;
+}
+.fv-disclaimer::before { content: 'ⓘ'; color: var(--gold); font-size: 13px; flex-shrink: 0; margin-top: -1px; }
+
+/* ── Stress Test ── */
+.stress-box {
+  background: rgba(244,63,94,.06); border: 1px solid rgba(244,63,94,.35);
+  border-radius: 6px; padding: 16px; margin-top: 14px;
+  display: none; position: relative; overflow: hidden;
+}
+.stress-box::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--red), transparent);
+}
+.stress-box.show { display: block; }
+.stress-head {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  font-family: var(--cond); font-size: 13px; font-weight: 800;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--red);
+}
+.stress-head::before { content: '⚠'; font-size: 16px; }
+.stress-text { font-size: 11px; color: #fca5a5; line-height: 1.65; }
+.stress-amount {
+  font-family: var(--cond); font-size: 20px; font-weight: 800;
+  color: var(--red); margin: 6px 0;
+  text-shadow: 0 0 16px rgba(244,63,94,.3);
+}
+
+/* ── Hedge Toggle ── */
+.hedge-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px; background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 5px; gap: 12px; flex-wrap: wrap;
+  margin-top: 14px;
+}
+.hedge-label { font-size: 11px; color: var(--text); }
+.hedge-sub { font-size: 9px; color: var(--muted); margin-top: 2px; }
+.toggle-wrap { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.toggle-lbl { font-size: 10px; color: var(--muted); }
+.toggle {
+  width: 44px; height: 24px; border-radius: 12px;
+  background: var(--bg3); border: 1px solid var(--border2);
+  position: relative; cursor: pointer; transition: background .25s, border-color .25s;
+  flex-shrink: 0;
+}
+.toggle.on { background: var(--g2); border-color: var(--g3); }
+.toggle::after {
+  content: '';
+  position: absolute; top: 3px; left: 3px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--muted); transition: transform .25s, background .25s;
+}
+.toggle.on::after { transform: translateX(20px); background: var(--bg); }
+.hedge-result {
+  width: 100%;
+  background: rgba(0,229,160,.04); border: 1px solid rgba(0,229,160,.15);
+  border-radius: 5px; padding: 10px 14px;
+  font-size: 11px; color: var(--g3); line-height: 1.55;
+  display: none;
+}
+.hedge-result.show { display: block; }
+
+/* ── Summary strip ── */
+.summary-strip {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px;
+  margin-top: 20px;
+}
+@media(max-width:800px){ .summary-strip { grid-template-columns: repeat(3, 1fr); } }
+@media(max-width:480px){ .summary-strip { grid-template-columns: repeat(2, 1fr); } }
+.ss-item {
+  background: var(--bg1); border: 1px solid var(--border); border-radius: 5px;
+  padding: 10px 12px;
+}
+.ss-label { font-size: 8px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted2); margin-bottom: 4px; }
+.ss-val { font-family: var(--cond); font-size: 15px; font-weight: 700; color: var(--text); }
+.ss-val.g { color: var(--g3); }
+.ss-val.gold { color: var(--gold); }
+.ss-val.red  { color: var(--red); }
+
+/* Ladder strip */
+.ladder-strip { display: flex; gap: 4px; margin-top: 14px; }
+.ls-seg { flex: 1; height: 6px; border-radius: 2px; background: var(--border2); transition: background .4s; }
+.ls-seg.done { background: var(--g); box-shadow: 0 0 6px rgba(0,229,160,.4); }
+
+/* ── Export JSON ── */
+.export-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, var(--g2), var(--g));
+  color: var(--bg); font-family: var(--cond); font-size: 13px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  border: none; border-radius: 4px; cursor: pointer;
+  box-shadow: 0 0 20px rgba(0,229,160,.2);
+  transition: transform .15s, box-shadow .2s;
+}
+.export-btn:hover { transform: translateY(-1px); box-shadow: 0 0 32px rgba(0,229,160,.35); }
+.export-btn:active { transform: translateY(0); }
+
+.json-output {
+  margin-top: 14px; display: none;
+}
+.json-output.show { display: block; }
+pre.json-pre {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 5px; padding: 16px;
+  font-family: var(--mono); font-size: 11px;
+  color: var(--g); line-height: 1.6;
+  overflow-x: auto; white-space: pre;
+  max-height: 400px; overflow-y: auto;
+}
+
+/* ── Utility ── */
+.row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.mt4 { margin-top: 4px; }
+.mt8 { margin-top: 8px; }
+.mt12 { margin-top: 12px; }
+.divider { height: 1px; background: var(--border); margin: 14px 0; }
+
+/* ── Step-Up badge ── */
+.stepup-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 8px; letter-spacing: .1em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 3px; margin-left: 6px;
+  background: rgba(251,146,60,.1); color: var(--amber);
+  border: 1px solid rgba(251,146,60,.25);
+  font-family: var(--cond); font-weight: 700;
+}
+
+/* ── Milestone Timeline ── */
+.milestone-section { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 16px; }
+.milestone-title {
+  font-size: 8px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.milestone-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.milestone-track {
+  position: relative;
+  padding-left: 28px;
+  display: flex; flex-direction: column; gap: 0;
+}
+.milestone-track::before {
+  content: ''; position: absolute;
+  left: 9px; top: 10px; bottom: 10px;
+  width: 2px; background: var(--border2);
+}
+
+.ms-item {
+  position: relative;
+  padding: 10px 0 10px 16px;
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 8px; align-items: center;
+  transition: opacity .3s;
+}
+.ms-item::before {
+  content: ''; position: absolute;
+  left: -19px; top: 50%; transform: translateY(-50%);
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid var(--border2); background: var(--bg2);
+  transition: all .4s;
+}
+.ms-item.reached::before {
+  background: var(--g); border-color: var(--g3);
+  box-shadow: 0 0 10px rgba(0,229,160,.5);
+}
+.ms-item.unreachable::before { border-color: var(--muted2); }
+
+.ms-target {
+  font-family: var(--cond); font-size: 13px; font-weight: 700;
+  color: var(--muted);
+  transition: color .4s;
+}
+.ms-item.reached .ms-target { color: var(--g3); }
+.ms-item.unreachable .ms-target { color: var(--muted2); }
+
+.ms-detail { font-size: 9px; color: var(--muted2); margin-top: 1px; }
+.ms-item.reached .ms-detail { color: var(--muted); }
+
+.ms-right { text-align: right; }
+.ms-age {
+  font-family: var(--cond); font-size: 20px; font-weight: 800;
+  color: var(--g); line-height: 1;
+}
+.ms-item.unreachable .ms-age { color: var(--muted2); font-size: 14px; }
+.ms-age-lbl { font-size: 8px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted2); }
+
+/* ── SWR / Passive Income Card ── */
+.swr-card {
+  background: linear-gradient(135deg, #03100a 0%, #061520 60%, #080d1a 100%);
+  border: 1px solid rgba(0,229,160,.2);
+  border-radius: 6px; padding: 28px 28px 24px;
+  position: relative; overflow: hidden;
+  margin-top: 0;
+}
+.swr-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--g), var(--gold), transparent);
+}
+.swr-card::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 500px 300px at 100% 100%, rgba(240,180,41,.04), transparent 60%);
+  pointer-events: none;
+}
+
+.swr-eyebrow {
+  font-family: var(--cond); font-size: 10px; font-weight: 700;
+  letter-spacing: .2em; text-transform: uppercase; color: var(--g2);
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.swr-eyebrow::before {
+  content: ''; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--g); box-shadow: 0 0 8px var(--g);
+  animation: pulse-dot 2.5s infinite;
+}
+
+.swr-narrative {
+  font-size: clamp(12px, 1.5vw, 14px); color: var(--text);
+  line-height: 1.7; letter-spacing: .02em;
+  position: relative; z-index: 1;
+}
+.swr-narrative .swr-amount {
+  font-family: var(--cond); font-size: clamp(22px, 3.5vw, 32px); font-weight: 800;
+  color: var(--g3); letter-spacing: -.02em; line-height: 1;
+  display: inline-block; margin: 2px 0;
+  text-shadow: 0 0 28px rgba(0,229,160,.3);
+}
+.swr-narrative .swr-age { color: var(--gold); font-weight: 700; }
+
+.swr-meta-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  margin-top: 18px; position: relative; z-index: 1;
+}
+@media(max-width:500px){ .swr-meta-row { grid-template-columns: 1fr 1fr; } }
+.swr-meta-item {
+  background: rgba(0,0,0,.3); border: 1px solid var(--border);
+  border-radius: 4px; padding: 8px 10px;
+}
+.swr-meta-label { font-size: 8px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted2); margin-bottom: 3px; }
+.swr-meta-val { font-family: var(--cond); font-size: 14px; font-weight: 700; color: var(--text); }
+
+.swr-disclaimer {
+  margin-top: 14px; padding: 10px 14px;
+  background: rgba(240,180,41,.04); border: 1px solid rgba(240,180,41,.12);
+  border-radius: 4px; font-size: 10px; color: var(--muted); line-height: 1.6;
+  display: flex; gap: 8px; align-items: flex-start;
+  position: relative; z-index: 1;
+}
+.swr-disclaimer::before { content: 'ⓘ'; color: var(--gold); flex-shrink: 0; }
+
+/* Number flash */
+@keyframes nflash { 0%{color:var(--g3)} 100%{color:inherit} }
+.nflash { animation: nflash .4s ease; }
+
+/* Scroll bar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* Responsive */
+@media(max-width:640px){ .content { padding: 16px; } .topbar { padding: 12px 16px; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ═══════════════════════════════ TOP BAR ═══════════════════════════════ -->
+<div class="topbar">
+  <div class="topbar-brand">TTUK<span> Dashboard</span></div>
+  <div class="topbar-meta">
+    <div class="topbar-dot">Sistem Aktif</div>
+    <span>Pasar Domestik Indonesia</span>
+    <span id="clockDisplay">--:--:--</span>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ═══════════════════════════════ MODULE 01 — INPUT + TANGGA ════════════ -->
+<div class="sec-head">
+  <span class="sec-id">MOD-01</span>
+  <span class="sec-title">Input & Tracker Tangga Finansial</span>
+  <div class="sec-line"></div>
+</div>
+
+<div class="main-grid">
+
+  <!-- LEFT: Input panel -->
+  <aside>
+    <div class="panel">
+      <div class="panel-head">Parameter Keuangan</div>
+      <div class="panel-body">
+
+        <div class="form-group">
+          <label>Uang Tunai Saat Ini</label>
+          <div class="input-row">
+            <span class="input-pfx">Rp</span>
+            <input type="number" id="cash" min="0" placeholder="30000000" oninput="update()"/>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Pengeluaran Bulanan</label>
+          <div class="input-row">
+            <span class="input-pfx">Rp</span>
+            <input type="number" id="expense" min="0" placeholder="3000000" oninput="update()"/>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Total Hutang Kecil</label>
+          <div class="input-row">
+            <span class="input-pfx">Rp</span>
+            <input type="number" id="debt" min="0" placeholder="0" oninput="update()"/>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Pendapatan Bulanan</label>
+          <div class="input-row">
+            <span class="input-pfx">Rp</span>
+            <input type="number" id="income" min="0" placeholder="8000000" oninput="update()"/>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Investasi Bulanan (PMT)</label>
+          <div class="input-row">
+            <span class="input-pfx">Rp</span>
+            <input type="number" id="invest" min="0" placeholder="2000000" oninput="update()"/>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Return Tahunan</label>
+            <div class="input-row">
+              <input type="number" id="rate" min="0" max="100" step="0.1" placeholder="12" class="no-pfx" style="padding-right:24px" oninput="update()"/>
+              <span class="input-sfx">%</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Inflasi / Thn</label>
+            <div class="input-row">
+              <input type="number" id="inflation" min="0" max="50" step="0.1" placeholder="4" value="4" class="no-pfx" style="padding-right:24px;border-color:rgba(240,180,41,.3)" oninput="update()"/>
+              <span class="input-sfx" style="color:var(--gold)">%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Pajak &amp; Fee / Thn</label>
+          <div class="input-row">
+            <input type="number" id="taxfee" min="0" max="20" step="0.1" placeholder="1" value="1" class="no-pfx" style="padding-right:24px;border-color:rgba(244,63,94,.25)" oninput="update()"/>
+            <span class="input-sfx" style="color:var(--red)">%</span>
+          </div>
+          <div class="form-hint">Dikurangkan dari return sebelum FV dihitung</div>
+        </div>
+
+        <div class="form-group">
+          <label>Kenaikan Setoran / Thn <span class="stepup-badge">Step-Up</span></label>
+          <div class="input-row">
+            <input type="number" id="stepup" min="0" max="50" step="0.5" placeholder="5" value="5" class="no-pfx" style="padding-right:24px;border-color:rgba(251,146,60,.3)" oninput="update()"/>
+            <span class="input-sfx" style="color:var(--amber)">%</span>
+          </div>
+          <div class="form-hint">PMT naik sebesar ini setiap pergantian tahun (compound)</div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Umur Saat Ini</label>
+            <div class="input-row">
+              <input type="number" id="ageNow" min="1" max="99" placeholder="25" class="no-pfx" style="padding-right:28px" oninput="update()"/>
+              <span class="input-sfx">thn</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Target Umur</label>
+            <div class="input-row">
+              <input type="number" id="ageTarget" min="1" max="99" placeholder="55" class="no-pfx" style="padding-right:28px" oninput="update()"/>
+              <span class="input-sfx">thn</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="qs-grid">
+          <div class="qs-item">
+            <div class="qs-label">Dana Darurat 6 Bln</div>
+            <div class="qs-val" id="qsDanaDarurat">—</div>
+          </div>
+          <div class="qs-item">
+            <div class="qs-label">Invest 20% Target</div>
+            <div class="qs-val" id="qsInvest20">—</div>
+          </div>
+          <div class="qs-item">
+            <div class="qs-label">Net Return</div>
+            <div class="qs-val" id="qsNetReturn">—</div>
+          </div>
+          <div class="qs-item">
+            <div class="qs-label">Tahun Investasi</div>
+            <div class="qs-val" id="qsYears">—</div>
+          </div>
+          <div class="qs-item" style="grid-column:1/-1">
+            <div class="qs-label">PMT Tahun Ke-5 (setelah step-up)</div>
+            <div class="qs-val" style="color:var(--amber)" id="qsPMT5">—</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </aside>
+
+  <!-- RIGHT: Tangga tracker -->
+  <div>
+    <div class="panel">
+      <div class="panel-head">7 Tangga Finansial — Status Real-Time</div>
+      <div class="panel-body">
+
+        <div class="tangga-list">
+
+          <!-- T1 -->
+          <div class="step" id="step1">
+            <div class="step-num">1</div>
+            <div class="step-info">
+              <div class="step-name">Nabung Rp 10 Juta</div>
+              <div class="step-sub">Modal awal investasi — benchmark pertama</div>
+              <div class="step-prog">
+                <div class="step-prog-label">
+                  <span id="t1ProgLabel">Rp 0 / Rp 10.000.000</span>
+                  <span id="t1Pct">0%</span>
+                </div>
+                <div class="step-prog-track"><div class="step-prog-fill" id="t1Bar"></div></div>
+              </div>
+            </div>
+            <div class="step-badge" id="badge1">Belum</div>
+          </div>
+
+          <!-- T2 -->
+          <div class="step" id="step2">
+            <div class="step-num">2</div>
+            <div class="step-info">
+              <div class="step-name">Lunas Semua Hutang</div>
+              <div class="step-sub">Bebas hutang = stop membayar bunga negatif</div>
+              <div class="step-prog" style="margin-top:6px;display:flex;gap:10px;font-size:10px;color:var(--muted)">
+                <span>Sisa: <strong id="t2Debt" style="color:var(--red)">Rp 0</strong></span>
+                <span id="t2Status">—</span>
+              </div>
+            </div>
+            <div class="step-badge" id="badge2">Belum</div>
+          </div>
+
+          <!-- T3 -->
+          <div class="step" id="step3">
+            <div class="step-num">3</div>
+            <div class="step-info">
+              <div class="step-name">Dana Darurat 6 Bulan</div>
+              <div class="step-sub">Jaring pengaman bila terjadi hal darurat</div>
+              <div class="step-prog">
+                <div class="step-prog-label">
+                  <span id="t3ProgLabel">0.0 dari 6 bulan</span>
+                  <span id="t3Pct">0%</span>
+                </div>
+                <div class="step-prog-track"><div class="step-prog-fill" id="t3Bar"></div></div>
+              </div>
+            </div>
+            <div class="step-badge" id="badge3">Belum</div>
+          </div>
+
+          <!-- T4 -->
+          <div class="step" id="step4">
+            <div class="step-num">4</div>
+            <div class="step-info">
+              <div class="step-name">Investasi ≥ 20% Income</div>
+              <div class="step-sub">Alokasi minimum aset produktif bulanan</div>
+              <div class="step-prog">
+                <div class="step-prog-label">
+                  <span id="t4ProgLabel">0% dari target 20%</span>
+                  <span id="t4Pct">0%</span>
+                </div>
+                <div class="step-prog-track"><div class="step-prog-fill" id="t4Bar"></div></div>
+              </div>
+            </div>
+            <div class="step-badge" id="badge4">Belum</div>
+          </div>
+
+          <!-- T5 -->
+          <div class="step" id="step5">
+            <div class="step-num">5</div>
+            <div class="step-info">
+              <div class="step-name">Portofolio Aset Produktif</div>
+              <div class="step-sub">Saham, reksa dana, obligasi, properti sewaan</div>
+              <label class="step-check" onclick="toggleManual(5)">
+                <input type="checkbox" id="chk5"/>
+                <div class="chk-box" id="cc5"></div>
+                <span>Saya sudah memiliki aset produktif yang menghasilkan</span>
+              </label>
+            </div>
+            <div class="step-badge" id="badge5">Manual</div>
+          </div>
+
+          <!-- T6 -->
+          <div class="step" id="step6">
+            <div class="step-num">6</div>
+            <div class="step-info">
+              <div class="step-name">Passive Income &gt; Pengeluaran</div>
+              <div class="step-sub">Cash flow pasif sudah cover biaya hidup</div>
+              <label class="step-check" onclick="toggleManual(6)">
+                <input type="checkbox" id="chk6"/>
+                <div class="chk-box" id="cc6"></div>
+                <span>Passive income bulanan saya sudah melebihi pengeluaran</span>
+              </label>
+            </div>
+            <div class="step-badge" id="badge6">Manual</div>
+          </div>
+
+          <!-- T7 -->
+          <div class="step" id="step7">
+            <div class="step-num">7</div>
+            <div class="step-info">
+              <div class="step-name">Financial Freedom 🏆</div>
+              <div class="step-sub">Uang bekerja penuh untuk Anda — tidak perlu lagi bekerja</div>
+              <label class="step-check" onclick="toggleManual(7)">
+                <input type="checkbox" id="chk7"/>
+                <div class="chk-box" id="cc7"></div>
+                <span>Saya telah mencapai kebebasan finansial penuh</span>
+              </label>
+            </div>
+            <div class="step-badge" id="badge7">Puncak</div>
+          </div>
+
+        </div><!-- /tangga-list -->
+
+        <!-- Ladder progress strip -->
+        <div style="margin-top:14px">
+          <div style="font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">
+            PROGRES TANGGA — <span id="stepsCount" style="color:var(--g)">0 / 7 selesai</span>
+          </div>
+          <div class="ladder-strip">
+            <div class="ls-seg" id="ls1"></div>
+            <div class="ls-seg" id="ls2"></div>
+            <div class="ls-seg" id="ls3"></div>
+            <div class="ls-seg" id="ls4"></div>
+            <div class="ls-seg" id="ls5"></div>
+            <div class="ls-seg" id="ls6"></div>
+            <div class="ls-seg" id="ls7"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main-grid -->
+
+
+<!-- ═══════════════════════════════ MODULE 02 — REBALANCER ════════════════ -->
+<div class="sec-head">
+  <span class="sec-id">MOD-02</span>
+  <span class="sec-title">Smart Rebalancer — Pasar Domestik Indonesia</span>
+  <div class="sec-line"></div>
+</div>
+
+<div class="panel">
+  <div class="panel-head">Alokasi Aset Berdasarkan Skenario Pasar</div>
+  <div class="panel-body">
+
+    <div class="scenario-bar">
+      <span class="scenario-label-txt">Skenario:</span>
+      <select id="scenarioSelect" onchange="renderRebalancer()">
+        <option value="ekspansi">🚀 Ekspansi — Risk-On</option>
+        <option value="krisis">🛡 Krisis / Stagflasi — Safe Haven</option>
+        <option value="sideways">⚖ Konsolidasi — Sideways</option>
+      </select>
+      <div class="regime-pill ekspansi" id="regimePill">🚀 Risk-On</div>
+      <div style="margin-left:auto;font-size:10px;color:var(--muted)">
+        Dana: <strong id="rebFund" style="color:var(--g3)">Rp 0</strong> / bulan
+      </div>
+    </div>
+
+    <div id="regimeDesc" style="padding:10px 14px;border-radius:4px;border-left:3px solid var(--g);
+      background:rgba(0,229,160,.04);font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.6">
+    </div>
+
+    <div class="reb-grid">
+      <!-- Chart -->
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <div class="chart-wrap">
+          <canvas id="portChart"></canvas>
+          <div class="chart-center">
+            <div class="chart-center-lbl">Skenario</div>
+            <div class="chart-center-val" id="chartLabel">Ekspansi</div>
+          </div>
+        </div>
+        <div class="chart-legend" id="chartLegend"></div>
+      </div>
+
+      <!-- Asset list -->
+      <div class="asset-list" id="assetList"></div>
+    </div>
+
+    <!-- Monthly instruction -->
+    <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+      <div style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">
+        ▸ INSTRUKSI INVESTASI BULAN INI
+      </div>
+      <div class="monthly-grid" id="monthlyGrid"></div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════ MODULE 03 — FV PROYEKSI ══════════════ -->
+<div class="sec-head">
+  <span class="sec-id">MOD-03</span>
+  <span class="sec-title">Proyeksi Future Value — Nominal &amp; Riil</span>
+  <div class="sec-line"></div>
+</div>
+
+<div class="panel">
+  <div class="panel-head">Kalkulator FV Net — Step-Up PMT (setelah pajak, fee &amp; inflasi)</div>
+  <div class="panel-body">
+
+    <!-- Param row -->
+    <div class="fv-params">
+      <div class="fv-param">
+        <div class="fv-param-label">Net Return / Thn</div>
+        <div class="fv-param-val" id="fpNetRate">—</div>
+      </div>
+      <div class="fv-param">
+        <div class="fv-param-label">Real Return / Thn</div>
+        <div class="fv-param-val" style="color:var(--gold)" id="fpRealRate">—</div>
+      </div>
+      <div class="fv-param">
+        <div class="fv-param-label">Lama Investasi</div>
+        <div class="fv-param-val" id="fpYears">—</div>
+      </div>
+      <div class="fv-param">
+        <div class="fv-param-label">Total Modal Disetor</div>
+        <div class="fv-param-val" id="fpModal">—</div>
+      </div>
+      <div class="fv-param">
+        <div class="fv-param-label">FV Modal Awal</div>
+        <div class="fv-param-val" id="fpFVPV">—</div>
+      </div>
+      <div class="fv-param">
+        <div class="fv-param-label">FV Anuitas (Step-Up)</div>
+        <div class="fv-param-val" style="color:var(--amber)" id="fpFVPMT">—</div>
+      </div>
+    </div>
+
+    <!-- Main FV cards -->
+    <div class="fv-grid">
+      <div class="fv-card nominal">
+        <div class="fv-eyebrow nominal">FV Nominal (Net + Step-Up)</div>
+        <div class="fv-value" id="fvNominal">Rp 0</div>
+        <div class="fv-sub" id="fvNominalSub">Return bruto dikurangi pajak &amp; fee, PMT naik tiap tahun</div>
+      </div>
+      <div class="fv-card real">
+        <div class="fv-eyebrow real">FV Riil (Daya Beli)</div>
+        <div class="fv-value" id="fvReal">Rp 0</div>
+        <div class="fv-sub" id="fvRealSub">Nilai setara purchasing power saat ini</div>
+      </div>
+    </div>
+
+    <div class="fv-disclaimer">
+      FV Riil menunjukkan daya beli sebenarnya dari kekayaan Anda di masa depan setelah tergerus inflasi. Dihitung menggunakan persamaan Fisher: <em>r_real = ((1 + r_net) / (1 + inflasi)) − 1</em>. PMT menggunakan model <strong>Step-Up</strong>: setoran naik setiap tahun sesuai persentase kenaikan yang diinput.
+    </div>
+
+    <!-- Milestone Tracker -->
+    <div class="milestone-section">
+      <div class="milestone-title">▸ Milestone Tracker — Kapan Portofolio Menembus Target?</div>
+      <div class="milestone-track" id="milestoneTrack">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════ MODULE 04 — PASSIVE INCOME (SWR) ═════ -->
+<div class="sec-head">
+  <span class="sec-id">MOD-04</span>
+  <span class="sec-title">Proyeksi Pendapatan Pasif (Safe Withdrawal Rate)</span>
+  <div class="sec-line"></div>
+</div>
+
+<div class="swr-card">
+  <div class="swr-eyebrow">Fase Distribusi — Kebebasan Finansial</div>
+  <div class="swr-narrative" id="swrNarrative">
+    Isi data investasi untuk melihat proyeksi pendapatan pasif Anda.
+  </div>
+  <div class="swr-meta-row">
+    <div class="swr-meta-item">
+      <div class="swr-meta-label">FV Nominal</div>
+      <div class="swr-meta-val" id="swrFV">—</div>
+    </div>
+    <div class="swr-meta-item">
+      <div class="swr-meta-label">SWR 4% / Tahun</div>
+      <div class="swr-meta-val" style="color:var(--g3)" id="swrAnnual">—</div>
+    </div>
+    <div class="swr-meta-item">
+      <div class="swr-meta-label">Pendapatan / Bulan</div>
+      <div class="swr-meta-val" style="color:var(--g3); font-size:17px" id="swrMonthly">—</div>
+    </div>
+  </div>
+  <div class="swr-disclaimer">
+    Safe Withdrawal Rate (SWR) 4% per tahun adalah metode distribusi portofolio berbasis riset Trinity Study. Dengan menarik 4% per tahun, portofolio Anda secara historis mampu bertahan 30+ tahun tanpa kehabisan dana, asalkan diinvestasikan secara diversifikasi. Angka ini adalah estimasi — kondisi pasar aktual dapat bervariasi.
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════ MODULE 05 — STRESS TEST & HEDGE ══════ -->
+<div class="sec-head">
+  <span class="sec-id">MOD-05</span>
+  <span class="sec-title">Stress Test &amp; Natural FX Hedge</span>
+  <div class="sec-line"></div>
+</div>
+
+<div class="panel">
+  <div class="panel-head">Uji Ketahanan Portofolio</div>
+  <div class="panel-body">
+
+    <!-- Stress alert -->
+    <div id="stressBox" class="stress-box">
+      <div class="stress-head">Uji Stres — Potensi Max Drawdown IHSG</div>
+      <div class="stress-text">
+        Alokasi Saham Indonesia Anda di atas 30%. Bersiaplah melihat nilai portofolio berpotensi anjlok sementara sebesar:
+      </div>
+      <div class="stress-amount" id="stressAmount">Rp 0</div>
+      <div class="stress-text">
+        saat terjadi krisis di pasar saham (estimasi drawdown 25% dari proyeksi FV di tahun ke-5). <strong style="color:#fca5a5">Tetap disiplin dan jangan jual di harga bawah.</strong> Krisis bersifat sementara — investor yang bertahan selalu mencatat gain jangka panjang.
+      </div>
+    </div>
+
+    <!-- IDR Hedge Toggle -->
+    <div class="hedge-row">
+      <div>
+        <div class="hedge-label">🇮🇩 Simulasi Pelemahan Rupiah (IDR Depresiasi)</div>
+        <div class="hedge-sub">Jika aktif: return emas Indonesia mendapat +2%/thn — harga emas lokal naik otomatis saat IDR melemah terhadap USD (Natural FX Hedge)</div>
+      </div>
+      <div class="toggle-wrap">
+        <span class="toggle-lbl">OFF</span>
+        <div class="toggle" id="hedgeToggle" onclick="toggleHedge()"></div>
+        <span class="toggle-lbl">ON</span>
+      </div>
+    </div>
+
+    <div class="hedge-result" id="hedgeResult">
+      <strong style="color:var(--g3)">✓ Simulasi IDR Depresiasi Aktif</strong><br/>
+      Porsi alokasi Emas Indonesia dalam portofolio Anda mendapat bonus <strong>+2.00%/tahun</strong> dari efek pelemahan Rupiah. Ini mencerminkan natural hedge: saat IDR melemah, harga emas dalam Rupiah naik secara proporsional, memberikan lapisan perlindungan nilai tambahan pada aset Anda.
+      <div style="margin-top:8px;font-size:10px;color:var(--muted)">
+        Estimasi FV Emas (dengan hedge): <strong id="hedgeGoldFV" style="color:var(--gold)">Rp 0</strong>
+      </div>
+    </div>
+
+    <!-- Summary strip -->
+    <div style="margin-top:18px;border-top:1px solid var(--border);padding-top:14px">
+      <div style="font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">
+        ▸ RINGKASAN PORTOFOLIO
+      </div>
+      <div class="summary-strip">
+        <div class="ss-item">
+          <div class="ss-label">FV Nominal</div>
+          <div class="ss-val g" id="ssNominal">—</div>
+        </div>
+        <div class="ss-item">
+          <div class="ss-label">FV Riil</div>
+          <div class="ss-val gold" id="ssReal">—</div>
+        </div>
+        <div class="ss-item">
+          <div class="ss-label">Total Modal</div>
+          <div class="ss-val" id="ssModal">—</div>
+        </div>
+        <div class="ss-item">
+          <div class="ss-label">Gain (Nominal)</div>
+          <div class="ss-val g" id="ssGain">—</div>
+        </div>
+        <div class="ss-item">
+          <div class="ss-label">Tangga Selesai</div>
+          <div class="ss-val g" id="ssTangga">0 / 7</div>
+        </div>
+        <div class="ss-item">
+          <div class="ss-label">Skenario</div>
+          <div class="ss-val" id="ssSkenario" style="font-size:12px">—</div>
+        </div>
+      </div>
+      <div class="ladder-strip" style="margin-top:10px">
+        <div class="ls-seg" id="ss1"></div>
+        <div class="ls-seg" id="ss2"></div>
+        <div class="ls-seg" id="ss3"></div>
+        <div class="ls-seg" id="ss4"></div>
+        <div class="ls-seg" id="ss5"></div>
+        <div class="ls-seg" id="ss6"></div>
+        <div class="ls-seg" id="ss7"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════ MODULE 06 — EXPORT JSON ══════════════ -->
+<div class="sec-head">
+  <span class="sec-id">MOD-06</span>
+  <span class="sec-title">Export Data JSON — Bot Automation</span>
+  <div class="sec-line"></div>
+</div>
+
+<div class="panel">
+  <div class="panel-head">Ekspor ke Format JSON (untuk skrip Python / bot)</div>
+  <div class="panel-body">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.6">
+      Klik tombol di bawah untuk menghasilkan snapshot data portofolio Anda dalam format JSON terstruktur.
+      Data ini dapat langsung di-copy dan dibaca oleh skrip bot Python untuk automasi notifikasi, rebalancing, atau analisis lebih lanjut.
+    </div>
+    <button class="export-btn" onclick="exportJSON()">
+      ▸ Export Data to JSON
+    </button>
+    <div class="json-output" id="jsonOutput">
+      <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">
+        OUTPUT — Copy payload di bawah ini ke skrip Python Anda:
+      </div>
+      <pre class="json-pre"><code id="jsonCode"></code></pre>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /page -->
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   UTILITIES
+══════════════════════════════════════════════════════════════ */
+const IDR = v =>
+  new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(v);
+const PCT = v => (v*100).toFixed(2) + '%';
+const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
+
+function setTxt(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const s = typeof val === 'number' ? IDR(val) : String(val);
+  if (el.textContent !== s) {
+    el.textContent = s;
+    el.classList.remove('nflash'); void el.offsetWidth; el.classList.add('nflash');
+  }
+}
+
+function setBar(barId, pctId, pct) {
+  const bar = document.getElementById(barId);
+  const lbl = document.getElementById(pctId);
+  const p = clamp(pct, 0, 100);
+  if (bar) { bar.style.width = p + '%'; bar.classList.toggle('over', pct >= 100); }
+  if (lbl) lbl.textContent = Math.round(p) + '%';
+}
+
+function setStep(n, active, badge) {
+  const card = document.getElementById('step'+n);
+  const b    = document.getElementById('badge'+n);
+  const ls   = document.getElementById('ls'+n);
+  const ss   = document.getElementById('ss'+n);
+  if (card) card.classList.toggle('active', active);
+  if (b)    b.textContent = active ? '✓ Done' : (badge || 'Belum');
+  if (ls)   ls.classList.toggle('done', active);
+  if (ss)   ss.classList.toggle('done', active);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FV ENGINE — Step-Up PMT (monthly loop)
+   pv        : present value (lump sum)
+   pmt0      : initial monthly contribution
+   rAnnual   : annual rate (%)
+   years     : investment horizon
+   stepUpPct : annual step-up on PMT (%), 0 = flat
+══════════════════════════════════════════════════════════════ */
+function calcFVStepUp(pv, pmt0, rAnnual, years, stepUpPct) {
+  const totalMonths = years * 12;
+  const r           = (rAnnual / 100) / 12;       // monthly rate
+  const g           = (stepUpPct / 100);           // annual step-up rate
+  let   portfolio   = pv;
+  let   pmt         = pmt0;
+  let   totalModal  = pv;
+
+  for (let m = 1; m <= totalMonths; m++) {
+    /* Step-up: increase PMT at the start of each new year (every 12 months) */
+    if (m > 1 && (m - 1) % 12 === 0) {
+      pmt = pmt * (1 + g);
+    }
+    portfolio   = portfolio * (1 + r) + pmt;
+    totalModal += pmt;
+  }
+
+  /* FV of lump-sum only (for param display) */
+  const fv_pv = pv * Math.pow(1 + r, totalMonths);
+
+  return {
+    total:    portfolio,
+    fv_pv:    fv_pv,
+    fv_pmt:   portfolio - fv_pv,
+    modal:    totalModal,
+    gain:     portfolio - totalModal,
+    pmtFinal: pmt    // PMT value at last year
+  };
+}
+
+/* Legacy flat FV (still used for stress test year-5 calc) */
+function calcFV(pv, pmt, rAnnual, years) {
+  return calcFVStepUp(pv, pmt, rAnnual, years, 0);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MILESTONE TRACKER — find age when portfolio crosses targets
+══════════════════════════════════════════════════════════════ */
+const MILESTONES = [
+  { label: 'Rp 1 Miliar Pertama', target: 1_000_000_000, icon: '🎯' },
+  { label: 'Rp 5 Miliar',         target: 5_000_000_000, icon: '🚀' },
+  { label: 'Rp 10 Miliar',        target: 10_000_000_000, icon: '🏆' },
+];
+
+function calcMilestones(pv, pmt0, rAnnual, maxYears, stepUpPct, ageNow) {
+  const r      = (rAnnual / 100) / 12;
+  const g      = (stepUpPct / 100);
+  const maxMon = maxYears * 12;
+  let   port   = pv;
+  let   pmt    = pmt0;
+  const hits   = [];
+  let   miIdx  = 0;
+
+  for (let m = 1; m <= maxMon; m++) {
+    if (m > 1 && (m - 1) % 12 === 0) pmt = pmt * (1 + g);
+    port = port * (1 + r) + pmt;
+
+    while (miIdx < MILESTONES.length && port >= MILESTONES[miIdx].target) {
+      const yrFrac = m / 12;
+      hits.push({
+        ...MILESTONES[miIdx],
+        monthsFromNow: m,
+        yearsFromNow:  yrFrac,
+        age:           ageNow + yrFrac,
+        portfolioVal:  port,
+        reached:       true
+      });
+      miIdx++;
+    }
+    if (miIdx >= MILESTONES.length) break;
+  }
+
+  /* Mark unreached milestones */
+  while (miIdx < MILESTONES.length) {
+    hits.push({ ...MILESTONES[miIdx], reached: false });
+    miIdx++;
+  }
+
+  return hits;
+}
+
+function renderMilestones(hits, ageNow) {
+  const el = document.getElementById('milestoneTrack');
+  if (!el) return;
+  el.innerHTML = hits.map(h => {
+    if (h.reached) {
+      const ageDisplay = h.age.toFixed(1);
+      const yearDisplay = h.yearsFromNow < 1
+        ? Math.round(h.yearsFromNow * 12) + ' bulan'
+        : h.yearsFromNow.toFixed(1) + ' tahun';
+      return `
+      <div class="ms-item reached">
+        <div>
+          <div class="ms-target">${h.icon} ${h.label}</div>
+          <div class="ms-detail">dalam ${yearDisplay} — portofolio: ${IDR(h.portfolioVal)}</div>
+        </div>
+        <div class="ms-right">
+          <div class="ms-age">${ageDisplay}</div>
+          <div class="ms-age-lbl">tahun</div>
+        </div>
+      </div>`;
+    } else {
+      return `
+      <div class="ms-item unreachable">
+        <div>
+          <div class="ms-target">${h.icon} ${h.label}</div>
+          <div class="ms-detail">Tidak tercapai dalam horizon investasi Anda</div>
+        </div>
+        <div class="ms-right">
+          <div class="ms-age">—</div>
+          <div class="ms-age-lbl">tahun</div>
+        </div>
+      </div>`;
+    }
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SWR — Safe Withdrawal Rate (4%)
+══════════════════════════════════════════════════════════════ */
+function renderSWR(fvNominal, ageTarget) {
+  const SWR_RATE    = 0.04;
+  const annual      = fvNominal * SWR_RATE;
+  const monthly     = annual / 12;
+
+  setTxt('swrFV',      fvNominal);
+  setTxt('swrAnnual',  annual);
+  setTxt('swrMonthly', monthly);
+
+  const narEl = document.getElementById('swrNarrative');
+  if (narEl) {
+    narEl.innerHTML = `Di umur <span class="swr-age">${ageTarget} tahun</span>, portofolio ini dapat memberikan Anda penghasilan pasif sebesar:<br/>
+      <span class="swr-amount">${IDR(monthly)}</span><br/>
+      setiap bulannya — tanpa mengurangi modal pokok secara drastis.`;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SCENARIO DATA
+══════════════════════════════════════════════════════════════ */
+const SCENARIOS = {
+  ekspansi: {
+    label: '🚀 Risk-On', cls: 'ekspansi', chartLabel: 'Ekspansi',
+    desc: '<strong style="color:var(--g3)">Ekspansi — Risk-On:</strong> Ekonomi tumbuh, suku bunga cenderung turun, dan kepercayaan investor meningkat. Overweight ke saham domestik (IHSG/LQ45) untuk memanfaatkan momentum pertumbuhan ekonomi Indonesia.',
+    assets: [
+      { key:'saham', name:'Saham Indonesia', ticker:'IHSG / LQ45', icon:'📈', type:'saham', risk:'agg',  riskLabel:'Agresif',    pct:60, color:'#00e5a0',
+        rationale:'IHSG outperform di fase ekspansi. Eksposur ke LQ45 atau reksa dana saham memberikan akses pertumbuhan EPS korporasi domestik.' },
+      { key:'sbn',   name:'Obligasi Negara', ticker:'SBN / SUN',   icon:'🏛', type:'sbn',   risk:'cons', riskLabel:'Konservatif', pct:20, color:'#22d3ee',
+        rationale:'Stabilizer portofolio. Kupon tetap SBN memberi buffer saat volatilitas saham naik dan diversifikasi antar-aset.' },
+      { key:'oblig', name:'Obligasi Korporasi',ticker:'Corp Bond', icon:'📋', type:'oblig', risk:'mod',  riskLabel:'Moderat',    pct:10, color:'#a78bfa',
+        rationale:'Yield lebih tinggi dari SBN. Di fase ekspansi, risiko default korporasi grade investment rendah dan spread menyempit.' },
+      { key:'emas',  name:'Emas Indonesia',  ticker:'ANTM/LM',    icon:'🥇', type:'emas',  risk:'tact', riskLabel:'Taktis',     pct:10, color:'#f0b429',
+        rationale:'Hedge taktis kecil. Emas logam mulia (Antam/LM) menjaga portofolio dari kejutan geopolitik atau lonjakan inflasi mendadak.' },
+    ]
+  },
+  krisis: {
+    label: '🛡 Safe Haven', cls: 'krisis', chartLabel: 'Safe Haven',
+    desc: '<strong style="color:var(--gold)">Krisis / Stagflasi — Safe Haven:</strong> Inflasi tinggi, pasar saham anjlok, dan ketidakpastian memuncak. Putar portofolio ke aset defensif. Emas Indonesia (ANTM/LM) menjadi lindung nilai utama — harganya naik saat IDR melemah dan pasar jatuh.',
+    assets: [
+      { key:'emas',  name:'Emas Indonesia',  ticker:'ANTM/LM',    icon:'🥇', type:'emas',  risk:'tact', riskLabel:'Safe Haven',  pct:40, color:'#f0b429',
+        rationale:'Emas domestik adalah safe haven terbaik saat krisis. Double benefit: harga USD naik + IDR melemah → harga Rupiah emas naik signifikan.' },
+      { key:'sbn',   name:'Obligasi Negara', ticker:'SBN / SUN',   icon:'🏛', type:'sbn',   risk:'cons', riskLabel:'Konservatif', pct:30, color:'#22d3ee',
+        rationale:'Flight-to-safety ke obligasi pemerintah. Kupon tetap SBN memberikan arus kas positif saat aset lain tertekan.' },
+      { key:'oblig', name:'Obligasi Korporasi',ticker:'Corp Bond', icon:'📋', type:'oblig', risk:'mod',  riskLabel:'Moderat',    pct:20, color:'#a78bfa',
+        rationale:'Pilih grade investment tertinggi (A+). Spread melebar saat krisis memberikan peluang entry dengan yield menarik.' },
+      { key:'saham', name:'Saham Indonesia', ticker:'IHSG / LQ45', icon:'📈', type:'saham', risk:'agg',  riskLabel:'Selektif',   pct:10, color:'#00e5a0',
+        rationale:'Porsi minimal. Fokus sektor defensif: consumer staples, utilities, telekomunikasi. Antisipasi pemulihan cepat pasca-krisis.' },
+    ]
+  },
+  sideways: {
+    label: '⚖ Konsolidasi', cls: 'sideways', chartLabel: 'Sideways',
+    desc: '<strong style="color:var(--blue)">Konsolidasi — Sideways:</strong> Pasar bergerak tanpa tren jelas, volatilitas sedang. Strategi: distribusi seimbang dengan fokus pada yield, dividen, dan potensi tactical trading di emas saat IDR tertekan.',
+    assets: [
+      { key:'saham', name:'Saham Indonesia', ticker:'IHSG / LQ45', icon:'📈', type:'saham', risk:'agg',  riskLabel:'Dividend',   pct:30, color:'#00e5a0',
+        rationale:'Moderat. Fokus saham high-dividend di IHSG. Pasar sideways = pasar dividen. Screening saham dengan DY >4% dan PBV rendah.' },
+      { key:'oblig', name:'Obligasi Korporasi',ticker:'Corp Bond', icon:'📋', type:'oblig', risk:'mod',  riskLabel:'Moderat',    pct:30, color:'#a78bfa',
+        rationale:'Sumber yield stabil saat pasar tidak trending. Obligasi korporasi grade menengah memberikan carry yang lebih baik dari deposito.' },
+      { key:'sbn',   name:'Obligasi Negara', ticker:'SBN / SUN',   icon:'🏛', type:'sbn',   risk:'cons', riskLabel:'Konservatif', pct:20, color:'#22d3ee',
+        rationale:'Anchor portofolio. Kupon SBN memberikan predictable cash flow sembari menunggu breakout arah pasar.' },
+      { key:'emas',  name:'Emas Indonesia',  ticker:'ANTM/LM',    icon:'🥇', type:'emas',  risk:'tact', riskLabel:'Taktis',     pct:20, color:'#f0b429',
+        rationale:'Tactical play. Kondisi sideways cocok untuk trading taktis emas; manfaatkan fluktuasi IDR/USD sebagai trigger beli.' },
+    ]
+  }
+};
+
+/* ══════════════════════════════════════════════════════════════
+   HEDGE STATE & CHART INSTANCE
+══════════════════════════════════════════════════════════════ */
+let hedgeOn = false;
+let portChart = null;
+let lastFV = null;   // store latest FV data for export/stress
+
+function toggleHedge() {
+  hedgeOn = !hedgeOn;
+  const t = document.getElementById('hedgeToggle');
+  t.classList.toggle('on', hedgeOn);
+  document.getElementById('hedgeResult').classList.toggle('show', hedgeOn);
+  update();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TOGGLE MANUAL STEPS (5,6,7)
+══════════════════════════════════════════════════════════════ */
+function toggleManual(n) {
+  const chk = document.getElementById('chk'+n);
+  const cc  = document.getElementById('cc'+n);
+  chk.checked = !chk.checked;
+  cc.classList.toggle('on', chk.checked);
+  setStep(n, chk.checked, 'Manual');
+  countSteps();
+}
+
+function countSteps() {
+  let done = 0;
+  for (let i = 1; i <= 7; i++) {
+    const c = document.getElementById('step'+i);
+    if (c && c.classList.contains('active')) done++;
+  }
+  const el = document.getElementById('stepsCount');
+  if (el) el.textContent = done + ' / 7 selesai';
+  const ss = document.getElementById('ssTangga');
+  if (ss) ss.textContent = done + ' / 7';
+  return done;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   REBALANCER RENDER
+══════════════════════════════════════════════════════════════ */
+function renderRebalancer() {
+  const key     = document.getElementById('scenarioSelect').value;
+  const sc      = SCENARIOS[key];
+  const invest  = parseFloat(document.getElementById('invest').value) || 0;
+
+  /* Pill + desc */
+  const pill = document.getElementById('regimePill');
+  pill.textContent = sc.label;
+  pill.className   = 'regime-pill ' + sc.cls;
+  document.getElementById('regimeDesc').innerHTML = sc.desc;
+  document.getElementById('chartLabel').textContent = sc.chartLabel;
+  document.getElementById('rebFund').textContent = IDR(invest);
+  document.getElementById('ssSkenario').textContent = sc.label;
+
+  /* Chart */
+  const labels = sc.assets.map(a => a.name);
+  const data   = sc.assets.map(a => a.pct);
+  const colors = sc.assets.map(a => a.color);
+
+  if (!portChart) {
+    const ctx = document.getElementById('portChart').getContext('2d');
+    portChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: { labels, datasets:[{ data, backgroundColor: colors,
+        borderColor: colors.map(()=>'#020408'), borderWidth: 3, hoverOffset: 6 }] },
+      options: {
+        cutout: '62%', responsive: true, maintainAspectRatio: true,
+        animation: { duration: 500, easing: 'easeInOutCubic' },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0c1920', borderColor: '#0f2d36', borderWidth: 1,
+            titleFont: { family: 'Space Mono', size: 10 },
+            bodyFont:  { family: 'Space Mono', size: 11 },
+            callbacks: { label: ctx => '  ' + ctx.label + ': ' + ctx.parsed + '%' }
+          }
+        }
+      }
+    });
+  } else {
+    portChart.data.labels   = labels;
+    portChart.data.datasets[0].data            = data;
+    portChart.data.datasets[0].backgroundColor = colors;
+    portChart.update();
+  }
+
+  /* Legend */
+  const legendEl = document.getElementById('chartLegend');
+  legendEl.innerHTML = sc.assets.map(a => `
+    <div class="cleg-item">
+      <div class="cleg-dot" style="background:${a.color}"></div>
+      <span>${a.name.replace(' Indonesia','')}</span>
+      <span class="cleg-pct">${a.pct}%</span>
+    </div>`).join('');
+
+  /* Asset list */
+  const assetEl = document.getElementById('assetList');
+  assetEl.innerHTML = sc.assets.map(a => {
+    const nom = Math.round(invest * a.pct / 100);
+    return `
+    <div class="asset-row" data-a="${a.type}">
+      <div class="asset-icon">${a.icon}</div>
+      <div class="asset-body">
+        <div class="asset-name">${a.name}</div>
+        <div class="asset-ticker">${a.ticker}</div>
+        <div class="asset-risk ${a.risk}">${a.riskLabel}</div>
+        <div class="asset-rationale">${a.rationale}</div>
+      </div>
+      <div class="asset-right">
+        <div class="asset-pct-big">${a.pct}<span style="font-size:14px">%</span></div>
+        <div class="asset-pct-lbl">alokasi</div>
+        <div class="asset-nominal">${IDR(nom)}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  /* Monthly grid */
+  const mgEl = document.getElementById('monthlyGrid');
+  mgEl.innerHTML = sc.assets.map(a => {
+    const nom = Math.round(invest * a.pct / 100);
+    return `
+    <div class="mi-card">
+      <div class="mi-icon">${a.icon}</div>
+      <div class="mi-label">${a.ticker}</div>
+      <div class="mi-amount">${IDR(nom)}</div>
+    </div>`;
+  }).join('');
+
+  updateStress();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STRESS TEST
+══════════════════════════════════════════════════════════════ */
+function updateStress() {
+  const key    = document.getElementById('scenarioSelect').value;
+  const sc     = SCENARIOS[key];
+  const sahamPct = sc.assets.find(a=>a.key==='saham')?.pct || 0;
+
+  if (sahamPct > 30 && lastFV) {
+    /* FV at year 5 using net return */
+    const cash    = parseFloat(document.getElementById('cash').value)    || 0;
+    const invest  = parseFloat(document.getElementById('invest').value)  || 0;
+    const rate    = parseFloat(document.getElementById('rate').value)    || 0;
+    const taxfee  = parseFloat(document.getElementById('taxfee').value)  || 1;
+    const netRate = Math.max(0, rate - taxfee);
+    const fv5     = calcFV(cash, invest, netRate, 5);
+    const drawdown= fv5.total * 0.25;
+    setTxt('stressAmount', drawdown);
+    document.getElementById('stressBox').classList.add('show');
+  } else {
+    document.getElementById('stressBox').classList.remove('show');
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MAIN UPDATE
+══════════════════════════════════════════════════════════════ */
+function update() {
+  const cash     = parseFloat(document.getElementById('cash').value)      || 0;
+  const expense  = parseFloat(document.getElementById('expense').value)   || 0;
+  const debt     = parseFloat(document.getElementById('debt').value)      || 0;
+  const income   = parseFloat(document.getElementById('income').value)    || 0;
+  const invest   = parseFloat(document.getElementById('invest').value)    || 0;
+  const rate     = parseFloat(document.getElementById('rate').value)      || 0;
+  const inflation= parseFloat(document.getElementById('inflation').value) || 4;
+  const taxfee   = parseFloat(document.getElementById('taxfee').value)    || 1;
+  const stepup   = parseFloat(document.getElementById('stepup').value)    || 0;
+  const ageNow   = parseInt(document.getElementById('ageNow').value)      || 0;
+  const ageTarget= parseInt(document.getElementById('ageTarget').value)   || 0;
+  const years    = Math.max(0, ageTarget - ageNow);
+
+  const netRate  = Math.max(0, rate - taxfee);
+  const rNom     = netRate / 100;
+  const rInf     = inflation / 100;
+  const rReal    = ((1 + rNom) / (1 + rInf)) - 1;
+  const rRealPct = rReal * 100;
+
+  const ddGoal   = expense * 6;
+  const inv20    = income  * 0.2;
+
+  /* PMT at year 5 preview */
+  const pmt5 = invest * Math.pow(1 + stepup/100, Math.min(5, years) - 1);
+  document.getElementById('qsDanaDarurat').textContent = invest > 0 ? IDR(ddGoal) : '—';
+  setTxt('qsDanaDarurat', ddGoal);
+  setTxt('qsInvest20',    inv20);
+  document.getElementById('qsNetReturn').textContent = netRate.toFixed(2) + '%';
+  document.getElementById('qsYears').textContent     = years > 0 ? years + ' tahun' : '—';
+  document.getElementById('qsPMT5').textContent      = invest > 0 && years >= 5
+    ? IDR(pmt5) + ' / bln' : '—';
+
+  /* ── TANGGA 1 ── */
+  const t1 = cash >= 10_000_000;
+  setStep(1, t1);
+  setBar('t1Bar','t1Pct', (cash/10_000_000)*100);
+  document.getElementById('t1ProgLabel').textContent = IDR(cash) + ' / ' + IDR(10_000_000);
+
+  /* ── TANGGA 2 ── */
+  const t2 = debt === 0;
+  setStep(2, t2);
+  document.getElementById('t2Debt').textContent   = IDR(debt);
+  document.getElementById('t2Debt').style.color   = t2 ? 'var(--g3)' : 'var(--red)';
+  document.getElementById('t2Status').textContent = t2 ? '✓ Bebas Hutang' : 'Ada Hutang';
+
+  /* ── TANGGA 3 (cash after T1 reserved) ── */
+  const cashForDD = Math.max(0, cash - 10_000_000);
+  const months    = expense > 0 ? cashForDD / expense : 0;
+  const t3        = expense > 0 && cashForDD >= ddGoal;
+  setStep(3, t3);
+  setBar('t3Bar','t3Pct', expense > 0 ? (cashForDD/ddGoal)*100 : 0);
+  document.getElementById('t3ProgLabel').textContent = Math.min(months,6).toFixed(1) + ' dari 6 bulan';
+
+  /* ── TANGGA 4 ── */
+  const investPct = income > 0 ? (invest/income)*100 : 0;
+  const t4        = income > 0 && invest >= inv20;
+  setStep(4, t4);
+  setBar('t4Bar','t4Pct', income > 0 ? (invest/inv20)*100 : 0);
+  document.getElementById('t4ProgLabel').textContent =
+    investPct.toFixed(1) + '% dari 20% target (' + IDR(invest) + ' / ' + IDR(inv20) + ')';
+
+  /* ── Manual steps 5-7 untouched ── */
+  countSteps();
+
+  /* ── FV Calc (Step-Up) ── */
+  if (years > 0 && netRate >= 0) {
+    const fvNom  = calcFVStepUp(cash, invest, netRate,  years, stepup);
+    const fvReal = calcFVStepUp(cash, invest, rRealPct, years, stepup);
+    lastFV = { fvNom, fvReal, stepup };
+
+    /* Hedge: recalc emas allocation FV with +2% */
+    if (hedgeOn) {
+      const key      = document.getElementById('scenarioSelect').value;
+      const sc       = SCENARIOS[key];
+      const emasAlloc= (sc.assets.find(a=>a.key==='emas')?.pct || 0) / 100;
+      const emasPMT  = invest * emasAlloc;
+      const fvGoldHedge = calcFVStepUp(0, emasPMT, netRate + 2, years, stepup);
+      setTxt('hedgeGoldFV', fvGoldHedge.total);
+    }
+
+    /* FV card display */
+    setTxt('fvNominal', fvNom.total);
+    setTxt('fvReal',    fvReal.total);
+    document.getElementById('fvNominalSub').textContent =
+      'Umur ' + ageTarget + ' | Net ' + netRate.toFixed(2) + '% | Step-Up ' + stepup + '%/thn | Modal: ' + IDR(fvNom.modal);
+    document.getElementById('fvRealSub').textContent =
+      'Real Return ' + rRealPct.toFixed(2) + '%/thn | Daya beli setara nilai uang saat ini';
+
+    /* Param row */
+    document.getElementById('fpNetRate').textContent  = netRate.toFixed(2) + '%';
+    document.getElementById('fpRealRate').textContent = rRealPct.toFixed(2) + '%';
+    document.getElementById('fpYears').textContent    = years + ' tahun';
+    setTxt('fpModal',  fvNom.modal);
+    setTxt('fpFVPV',   fvNom.fv_pv);
+    setTxt('fpFVPMT',  fvNom.fv_pmt);
+
+    /* Summary strip */
+    setTxt('ssNominal', fvNom.total);
+    setTxt('ssReal',    fvReal.total);
+    setTxt('ssModal',   fvNom.modal);
+    setTxt('ssGain',    fvNom.gain);
+    setTxt('summaryFV', fvNom.total);
+
+    /* Milestone Tracker */
+    if (ageNow > 0) {
+      const hits = calcMilestones(cash, invest, netRate, years, stepup, ageNow);
+      renderMilestones(hits, ageNow);
+    }
+
+    /* SWR Passive Income */
+    if (ageTarget > 0) {
+      renderSWR(fvNom.total, ageTarget);
+    }
+
+  } else {
+    lastFV = null;
+    document.getElementById('milestoneTrack').innerHTML =
+      '<div style="font-size:10px;color:var(--muted2);padding:8px 0">Isi parameter investasi untuk menghitung milestone.</div>';
+  }
+
+  /* Re-render rebalancer nominal amounts */
+  renderRebalancer();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   JSON EXPORT
+══════════════════════════════════════════════════════════════ */
+function exportJSON() {
+  const key    = document.getElementById('scenarioSelect').value;
+  const sc     = SCENARIOS[key];
+  const invest = parseFloat(document.getElementById('invest').value) || 0;
+  const ageNow   = parseInt(document.getElementById('ageNow').value)    || 0;
+  const ageTarget= parseInt(document.getElementById('ageTarget').value) || 0;
+  const years    = Math.max(0, ageTarget - ageNow);
+  const rate     = parseFloat(document.getElementById('rate').value)     || 0;
+  const taxfee   = parseFloat(document.getElementById('taxfee').value)   || 1;
+  const inflation= parseFloat(document.getElementById('inflation').value)|| 4;
+  const netRate  = Math.max(0, rate - taxfee);
+  const rNom     = netRate / 100;
+  const rInf     = inflation / 100;
+  const rRealPct = (((1+rNom)/(1+rInf))-1)*100;
+
+  /* Tangga status */
+  const tanggaStatus = {};
+  for (let i=1;i<=7;i++) {
+    const c = document.getElementById('step'+i);
+    tanggaStatus['tangga_'+i] = c ? c.classList.contains('active') : false;
+  }
+
+  /* Allocation */
+  const allocationNominal = {};
+  sc.assets.forEach(a => {
+    allocationNominal[a.ticker] = {
+      asset: a.name,
+      pct: a.pct,
+      nominal_idr: Math.round(invest * a.pct / 100)
+    };
+  });
+
+  const stepup   = parseFloat(document.getElementById('stepup').value)    || 0;
+  const fvNom  = lastFV ? Math.round(lastFV.fvNom.total)  : null;
+  const fvReal = lastFV ? Math.round(lastFV.fvReal.total) : null;
+  const modal  = lastFV ? Math.round(lastFV.fvNom.modal)  : null;
+  const gain   = lastFV ? Math.round(lastFV.fvNom.gain)   : null;
+
+  /* Milestones */
+  const milestoneData = {};
+  if (lastFV && ageNow > 0) {
+    const hits = calcMilestones(
+      parseFloat(document.getElementById('cash').value)||0,
+      invest, netRate, years, stepup, ageNow
+    );
+    hits.forEach(h => {
+      const k = h.label.replace(/\s+/g,'_').toLowerCase();
+      milestoneData[k] = h.reached
+        ? { reached: true, age: parseFloat(h.age.toFixed(1)), years_from_now: parseFloat(h.yearsFromNow.toFixed(1)) }
+        : { reached: false };
+    });
+  }
+
+  /* SWR */
+  const swrMonthly = fvNom ? Math.round(fvNom * 0.04 / 12) : null;
+  const swrAnnual  = fvNom ? Math.round(fvNom * 0.04)       : null;
+
+  const payload = {
+    meta: {
+      exported_at: new Date().toISOString(),
+      dashboard: 'TTUK — Tangga Ternak Uang Kuantitatif',
+      pasar: 'Domestik Indonesia',
+      version: '3.0'
+    },
+    parameters: {
+      cash_idr:           parseFloat(document.getElementById('cash').value)    || 0,
+      expense_monthly:    parseFloat(document.getElementById('expense').value) || 0,
+      debt_total:         parseFloat(document.getElementById('debt').value)    || 0,
+      income_monthly:     parseFloat(document.getElementById('income').value)  || 0,
+      invest_monthly:     invest,
+      step_up_annual_pct: stepup,
+      return_annual_pct:  rate,
+      net_return_pct:     netRate,
+      inflation_pct:      inflation,
+      tax_fee_pct:        taxfee,
+      real_return_pct:    parseFloat(rRealPct.toFixed(4)),
+      age_now:            ageNow,
+      age_target:         ageTarget,
+      years_to_invest:    years
+    },
+    tangga_status: tanggaStatus,
+    tangga_done_count: Object.values(tanggaStatus).filter(Boolean).length,
+    rebalancer: {
+      skenario: key,
+      skenario_label: sc.label,
+      alokasi: allocationNominal
+    },
+    proyeksi_fv: {
+      fv_nominal_idr:   fvNom,
+      fv_real_idr:      fvReal,
+      total_modal_idr:  modal,
+      gain_nominal_idr: gain
+    },
+    milestone_tracker: milestoneData,
+    passive_income_swr: {
+      swr_rate_pct:      4.0,
+      pendapatan_tahunan_idr: swrAnnual,
+      pendapatan_bulanan_idr: swrMonthly
+    },
+    stress_test: {
+      saham_pct: sc.assets.find(a=>a.key==='saham')?.pct || 0,
+      drawdown_triggered: (sc.assets.find(a=>a.key==='saham')?.pct||0) > 30,
+      estimated_drawdown_idr: (sc.assets.find(a=>a.key==='saham')?.pct||0) > 30 && lastFV
+        ? Math.round(calcFV(
+            parseFloat(document.getElementById('cash').value)||0,
+            invest, netRate, 5
+          ).total * 0.25)
+        : null
+    },
+    fx_hedge: {
+      idr_depresiasi_aktif: hedgeOn,
+      emas_bonus_return_pct: hedgeOn ? 2.0 : 0
+    }
+  };
+
+  document.getElementById('jsonCode').textContent = JSON.stringify(payload, null, 2);
+  document.getElementById('jsonOutput').classList.add('show');
+  document.getElementById('jsonOutput').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CLOCK
+══════════════════════════════════════════════════════════════ */
+function updateClock() {
+  const now = new Date();
+  const t = now.toLocaleTimeString('id-ID', { hour12: false });
+  const el = document.getElementById('clockDisplay');
+  if (el) el.textContent = t;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+/* ══════════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════════ */
+update();
+</script>
+</body>
+</html>
